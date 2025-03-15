@@ -1,7 +1,8 @@
 import { prisma } from "../server";
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -36,3 +37,76 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+function generateToken(userId: string, email: string, role: string) {
+    const accessToken = jwt.sign(
+      {
+        userId,
+        email,
+        role,
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: "60m" }
+    );
+    const refreshToken = uuidv4();
+    return { accessToken, refreshToken };
+  }
+  
+async function setTokens(
+    res: Response,
+    accessToken: string,
+    refreshToken: string
+  ) {
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 1000,
+    });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60,
+    });
+  }
+
+export const login = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { email, password } = req.body;
+      const extractCurrentUser = await prisma.user.findUnique({
+        where: { email },
+      });
+  
+      if (
+        !extractCurrentUser ||
+        !(await bcrypt.compare(password, extractCurrentUser.password))
+      ) {
+        res.status(401).json({
+          success: false,
+          error: "Invalid credentials",
+        });
+  
+        return;
+      }
+      const { accessToken, refreshToken } = generateToken(
+        extractCurrentUser.id,
+        extractCurrentUser.email,
+        extractCurrentUser.role
+      );
+  
+      await setTokens(res, accessToken, refreshToken);
+      res.status(200).json({
+        success: true,
+        message: "Login successfully",
+        user: {
+          id: extractCurrentUser.id,
+          name: extractCurrentUser.name,
+          email: extractCurrentUser.email,
+          role: extractCurrentUser.role,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  };
