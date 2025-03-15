@@ -155,3 +155,11 @@ export const refreshAccessToken = async (
   }
 };
 
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+  res.json({
+    success: true,
+    message: "User logged out successfully",
+  });
+};
