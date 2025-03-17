@@ -1,7 +1,5 @@
 # ZipZap - Modern E-Commerce Platform
 
-![ZipZap Banner](https://via.placeholder.com/1200x400?text=ZipZap+E-Commerce+Platform)
-
 ## 🚀 Overview
 ZipZap is a cutting-edge eCommerce platform built with modern web technologies. It provides a seamless shopping experience with a beautifully designed UI and powerful backend features.
 
