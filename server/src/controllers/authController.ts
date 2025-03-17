@@ -4,6 +4,39 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 
+function generateToken(userId: string, email: string, role: string) {
+  const accessToken = jwt.sign(
+    {
+      userId,
+      email,
+      role,
+    },
+    process.env.JWT_SECRET!,
+    { expiresIn: "60m" }
+  );
+  const refreshToken = uuidv4();
+  return { accessToken, refreshToken };
+}
+
+async function setTokens(
+  res: Response,
+  accessToken: string,
+  refreshToken: string
+) {
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 60 * 60 * 1000,
+  });
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60,
+  });
+}
+
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password } = req.body;
@@ -11,7 +44,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     if (existingUser) {
       res.status(400).json({
         success: false,
-        error: "Email already exists!",
+        error: "User with this email exists!",
       });
       return;
     }
@@ -33,83 +66,52 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to Register" });
+    res.status(500).json({ error: "Registration failed" });
   }
 };
 
-function generateToken(userId: string, email: string, role: string) {
-    const accessToken = jwt.sign(
-      {
-        userId,
-        email,
-        role,
-      },
-      process.env.JWT_SECRET!,
-      { expiresIn: "60m" }
-    );
-    const refreshToken = uuidv4();
-    return { accessToken, refreshToken };
-  }
-  
-async function setTokens(
-    res: Response,
-    accessToken: string,
-    refreshToken: string
-  ) {
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 1000,
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60,
-    });
-  }
-
 export const login = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { email, password } = req.body;
-      const extractCurrentUser = await prisma.user.findUnique({
-        where: { email },
+  try {
+    const { email, password } = req.body;
+    const extractCurrentUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (
+      !extractCurrentUser ||
+      !(await bcrypt.compare(password, extractCurrentUser.password))
+    ) {
+      res.status(401).json({
+        success: false,
+        error: "Invalid credentials",
       });
-  
-      if (
-        !extractCurrentUser ||
-        !(await bcrypt.compare(password, extractCurrentUser.password))
-      ) {
-        res.status(401).json({
-          success: false,
-          error: "Invalid credentials",
-        });
-  
-        return;
-      }
-      const { accessToken, refreshToken } = generateToken(
-        extractCurrentUser.id,
-        extractCurrentUser.email,
-        extractCurrentUser.role
-      );
-  
-      await setTokens(res, accessToken, refreshToken);
-      res.status(200).json({
-        success: true,
-        message: "Login successfully",
-        user: {
-          id: extractCurrentUser.id,
-          name: extractCurrentUser.name,
-          email: extractCurrentUser.email,
-          role: extractCurrentUser.role,
-        },
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Login failed" });
+
+      return;
     }
-  };
+    //create our access and refreshtoken
+    const { accessToken, refreshToken } = generateToken(
+      extractCurrentUser.id,
+      extractCurrentUser.email,
+      extractCurrentUser.role
+    );
+
+    //set out tokens
+    await setTokens(res, accessToken, refreshToken);
+    res.status(200).json({
+      success: true,
+      message: "Login successfully",
+      user: {
+        id: extractCurrentUser.id,
+        name: extractCurrentUser.name,
+        email: extractCurrentUser.email,
+        role: extractCurrentUser.role,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Login failed" });
+  }
+};
 
 export const refreshAccessToken = async (
   req: Request,
