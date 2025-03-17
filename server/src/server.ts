@@ -5,7 +5,13 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
+import couponRoutes from "./routes/couponRoutes";
+import settingsRoutes from "./routes/settingRoutes";
+import cartRoutes from "./routes/cartRoutes";
+import addressRoutes from "./routes/addressRoutes";
+import orderRoutes from "./routes/orderRoutes";
 
+//load all your enviroment variables
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,14 +31,18 @@ export const prisma = new PrismaClient();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
-
+app.use("/api/coupon", couponRoutes);
+app.use("/api/settings", settingsRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/address", addressRoutes);
+app.use("/api/order", orderRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Server Up and Running");
+  res.send("Hello from E-Commerce backend");
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is now running on port ${PORT}`);
 });
 
 process.on("SIGINT", async () => {
