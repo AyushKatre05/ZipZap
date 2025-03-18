@@ -3,20 +3,18 @@ services:
     type: web
     env: node
     plan: free
-    rootDirectory: server
-    buildCommand: npm install && npx prisma migrate deploy
-    startCommand: npm run start
+    buildCommand: cd server && npm install && npx prisma migrate deploy  # 👈 Go to server folder
+    startCommand: cd server && npm run start  # 👈 Start backend from server folder
     envVars:
       - key: DATABASE_URL
-        value: postgresql://zipzapdb_user:xDgi2K0OWQ2KgRQEq89dufZfrEY2LBaK@dpg-cvcmg53qf0us73di7rh0-a/zipzapdb  # Replace with the internal DB URL from Render
+        value: postgresql://zipzapdb_user:xDgi2K0OWQ2KgRQEq89dufZfrEY2LBaK@dpg-cvcmg53qf0us73di7rh0-a/zipzapdb  # Replace with your Render PostgreSQL Internal URL
 
   - name: frontend
     type: web
     env: node
     plan: free
-    rootDirectory: client
-    buildCommand: npm install && npm run build
-    startCommand: npm install -g serve && serve -s out -l 3000
+    buildCommand: cd client && npm install && npm run build  # 👈 Go to client folder
+    startCommand: cd client && npm install -g serve && serve -s out -l 3000
     envVars:
       - key: NEXT_PUBLIC_API_URL
         value: https://backend.onrender.com
