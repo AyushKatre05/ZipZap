@@ -3,8 +3,8 @@ services:
     type: web
     env: node
     plan: free
-    buildCommand: cd server && npm install && npx prisma migrate deploy  # 👈 Go to server folder
-    startCommand: cd server && npm run start  # 👈 Start backend from server folder
+    buildCommand: cd server && npm install && npm run build  # 👈 Build TypeScript before running
+    startCommand: cd server && npm run start:prod  # 👈 Use correct start script
     envVars:
       - key: DATABASE_URL
         value: postgresql://zipzapdb_user:xDgi2K0OWQ2KgRQEq89dufZfrEY2LBaK@dpg-cvcmg53qf0us73di7rh0-a/zipzapdb  # Replace with your Render PostgreSQL Internal URL
@@ -13,7 +13,7 @@ services:
     type: web
     env: node
     plan: free
-    buildCommand: cd client && npm install && npm run build  # 👈 Go to client folder
+    buildCommand: cd client && npm install && npm run build
     startCommand: cd client && npm install -g serve && serve -s out -l 3000
     envVars:
       - key: NEXT_PUBLIC_API_URL
