@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { useProductStore } from "@/store/useProductStore";
 import { brands, categories, colors, sizes } from "@/utils/config";
 import { Upload } from "lucide-react";
@@ -43,6 +44,7 @@ function SuperAdminManageProductPage() {
   const [selectedSizes, setSelectSizes] = useState<string[]>([]);
   const [selectedColors, setSelectColors] = useState<string[]>([]);
   const [selectedfiles, setSelectFiles] = useState<File[]>([]);
+  const { toast } = useToast();
   const searchParams = useSearchParams();
   const getCurrentEditedProductId = searchParams.get("id");
   const isEditMode = !!getCurrentEditedProductId;
@@ -129,6 +131,9 @@ function SuperAdminManageProductPage() {
     const checkFirstLevelFormSanitization = await protectProductFormAction();
 
     if (!checkFirstLevelFormSanitization.success) {
+      toast({
+        title: checkFirstLevelFormSanitization.error,
+      });
       return;
     }
 
