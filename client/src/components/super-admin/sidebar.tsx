@@ -15,48 +15,21 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
+import { motion } from "framer-motion";
 
 interface SidebarProps {
-  isOpen: Boolean;
+  isOpen: boolean;
   toggle: () => void;
 }
 
 const menuItems = [
-  {
-    name: "Products",
-    icon: Package,
-    href: "/super-admin/products/list",
-  },
-  {
-    name: "Add New Product",
-    icon: Printer,
-    href: "/super-admin/products/add",
-  },
-  {
-    name: "Orders",
-    icon: SendToBack,
-    href: "/super-admin/orders",
-  },
-  {
-    name: "Coupons",
-    icon: FileText,
-    href: "/super-admin/coupons/list",
-  },
-  {
-    name: "Create Coupon",
-    icon: ListOrdered,
-    href: "/super-admin/coupons/add",
-  },
-  {
-    name: "Settings",
-    icon: Settings,
-    href: "/super-admin/settings",
-  },
-  {
-    name: "logout",
-    icon: LogOut,
-    href: "",
-  },
+  { name: "Products", icon: Package, href: "/super-admin/products/list" },
+  { name: "Add Product", icon: Printer, href: "/super-admin/products/add" },
+  { name: "Orders", icon: SendToBack, href: "/super-admin/orders" },
+  { name: "Coupons", icon: FileText, href: "/super-admin/coupons/list" },
+  { name: "Create Coupon", icon: ListOrdered, href: "/super-admin/coupons/add" },
+  { name: "Settings", icon: Settings, href: "/super-admin/settings" },
+  { name: "Logout", icon: LogOut, href: "" },
 ];
 
 function SuperAdminSidebar({ isOpen, toggle }: SidebarProps) {
@@ -69,49 +42,44 @@ function SuperAdminSidebar({ isOpen, toggle }: SidebarProps) {
   }
 
   return (
-    <div
+    <motion.div
+      initial={{ width: isOpen ? 250 : 80 }}
+      animate={{ width: isOpen ? 250 : 80 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen bg-background transition-all duration-300",
-        isOpen ? "w-64" : "w-16",
-        "border-r"
+        "fixed left-0 top-0 z-50 h-screen border-r backdrop-blur-lg bg-white/10 dark:bg-black/10 shadow-lg transition-all duration-300",
+        "flex flex-col items-center py-6"
       )}
     >
-      <div className="flex h-16 items-center justify-between px-4">
-        <h1 className={cn("font-semibold", !isOpen && "hidden")}>
-          Admin Panel
-        </h1>
-        <Button
-          variant={"ghost"}
-          size={"icon"}
-          className="ml-auto"
-          onClick={toggle}
-        >
-          {isOpen ? (
-            <ChevronLeft className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
-      <div className="space-y-1 py-4">
+      {/* Toggle Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="mb-6 p-2 rounded-full bg-white/20 hover:bg-white/30"
+        onClick={toggle}
+      >
+        {isOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+      </Button>
+
+      {/* Sidebar Menu */}
+      <div className="flex flex-col space-y-4 w-full">
         {menuItems.map((item) => (
-          <div
-            onClick={
-              item.name === "logout"
-                ? handleLogout
-                : () => router.push(item.href)
-            }
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             key={item.name}
+            onClick={item.name === "Logout" ? handleLogout : () => router.push(item.href)}
             className={cn(
-              "flex cursor-pointer items-center px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+              "group flex items-center w-full p-3 rounded-xl cursor-pointer transition-all",
+              "hover:bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:text-white"
             )}
           >
-            <item.icon className="h-4 w-4" />
-            <span className={cn("ml-3", !isOpen && "hidden")}>{item.name}</span>
-          </div>
+            <item.icon className="h-5 w-5 text-gray-500 group-hover:text-white" />
+            {isOpen && <span className="ml-4 text-sm font-medium">{item.name}</span>}
+          </motion.div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
