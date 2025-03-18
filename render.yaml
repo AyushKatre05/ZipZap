@@ -24,17 +24,13 @@ services:
     envVars:
       - key: DATABASE_URL
         value: postgres://user:password@postgres-db:5432/ayush
-    dependsOn:
-      - postgres-db
 
   - name: frontend
-    type: web  # Changed from static to web
-    env: node  # Set as a Node.js environment
+    type: web
+    env: node
     plan: free
     buildCommand: npm install && npm run build
-    startCommand: npx serve -s out  # Serve the frontend
+    startCommand: npm install -g serve && serve -s out -l 3000
     envVars:
       - key: NEXT_PUBLIC_API_URL
         value: https://backend.onrender.com
-    dependsOn:
-      - backend
