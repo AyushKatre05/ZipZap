@@ -2,11 +2,7 @@ import { Suspense } from "react";
 import ProductDetailsSkeleton from "./productSkeleton";
 import ProductDetailsContent from "./productDetails";
 
-interface ProductDetailsPageProps {
-  params: { id: string };
-}
-
-function ProductDetailsPage({ params }: ProductDetailsPageProps) {
+function ProductDetailsPage({ params }: { params: { id: string } }) {
   return (
     <Suspense fallback={<ProductDetailsSkeleton />}>
       <ProductDetailsContent id={params.id} />
