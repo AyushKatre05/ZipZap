@@ -1,0 +1,9 @@
+FROM postgres:13
+
+ENV POSTGRES_USER=user
+ENV POSTGRES_PASSWORD=password
+ENV POSTGRES_DB=ayush
+
+VOLUME ["/var/lib/postgresql/data"]
+
+EXPOSE 5432
