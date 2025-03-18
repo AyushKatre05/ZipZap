@@ -1,34 +1,20 @@
 services:
-  - name: postgres-db
-    type: pserv
-    env: docker
-    plan: free
-    dockerContext: .
-    dockerfilePath: Dockerfile.db
-    envVars:
-      - key: POSTGRES_USER
-        value: user
-      - key: POSTGRES_PASSWORD
-        value: password
-      - key: POSTGRES_DB
-        value: ayush
-      - key: DATABASE_URL
-        value: postgres://user:password@postgres-db:5432/ayush
-
   - name: backend
     type: web
     env: node
     plan: free
+    rootDirectory: server
     buildCommand: npm install && npx prisma migrate deploy
     startCommand: npm run start
     envVars:
       - key: DATABASE_URL
-        value: postgres://user:password@postgres-db:5432/ayush
+        value: postgresql://zipzapdb_user:xDgi2K0OWQ2KgRQEq89dufZfrEY2LBaK@dpg-cvcmg53qf0us73di7rh0-a/zipzapdb  # Replace with the internal DB URL from Render
 
   - name: frontend
     type: web
     env: node
     plan: free
+    rootDirectory: client
     buildCommand: npm install && npm run build
     startCommand: npm install -g serve && serve -s out -l 3000
     envVars:
