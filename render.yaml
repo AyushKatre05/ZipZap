@@ -1,0 +1,40 @@
+services:
+  - name: postgres-db
+    type: pserv
+    env: docker
+    plan: free
+    dockerContext: .
+    dockerfilePath: Dockerfile.db
+    envVars:
+      - key: POSTGRES_USER
+        value: user
+      - key: POSTGRES_PASSWORD
+        value: password
+      - key: POSTGRES_DB
+        value: ayush
+      - key: DATABASE_URL
+        value: postgres://user:password@postgres-db:5432/ayush
+
+  - name: backend
+    type: web
+    env: node
+    plan: free
+    buildCommand: npm install && npx prisma migrate deploy
+    startCommand: npm run start
+    envVars:
+      - key: DATABASE_URL
+        value: postgres://user:password@postgres-db:5432/ayush
+    dependsOn:
+      - postgres-db
+
+  - name: frontend
+    type: static
+    env: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: out
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://backend.onrender.com
+    dependsOn:
+      - backend
