@@ -1,9 +1,7 @@
-import React from 'react'
+import SuperAdminProductListingPage from "./products/list/page";
 
-const page = () => {
-  return (
-    <div>page</div>
-  )
+function SuperAdmin() {
+  return <SuperAdminProductListingPage />;
 }
 
-export default page
+export default SuperAdmin;
