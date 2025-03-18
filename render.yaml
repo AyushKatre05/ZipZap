@@ -28,11 +28,11 @@ services:
       - postgres-db
 
   - name: frontend
-    type: static
-    env: static
+    type: web  # Changed from static to web
+    env: node  # Set as a Node.js environment
     plan: free
     buildCommand: npm install && npm run build
-    staticPublishPath: out
+    startCommand: npx serve -s out  # Serve the frontend
     envVars:
       - key: NEXT_PUBLIC_API_URL
         value: https://backend.onrender.com
